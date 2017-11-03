@@ -1,0 +1,54 @@
+service: awesmosis
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  region: ap-southeast-2
+  environment:
+    DYNAMODB_TABLE: awesmosis
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:ap-southeast-2:613449180302:table/awesmosis"
+
+functions:
+  create:
+    handler: profile/create.create
+    events:
+      - http:
+          path: profile
+          method: post
+          cors: true          
+  update:
+    handler: profile/update.update
+    events:
+      - http:
+          path: profile/{id}
+          method: post
+          cors: true
+  
+resources:
+  Resources:
+    ProfileDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: awesmosis
